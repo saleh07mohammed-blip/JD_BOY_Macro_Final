@@ -16,9 +16,10 @@ import webbrowser
 # ------------------------------------------------------------
 # ⚙️ إعدادات التحديث
 # ------------------------------------------------------------
-APP_VERSION = "1.0.1"  # 🚨 تم تحديث رقم الإصدار هنا
+APP_VERSION = "1.0.3"  # 🚨 تم تحديث رقم الإصدار هنا لنسخة المطور
 # 📌📌 رابط الملف الخام لـ latest_version.json على GitHub
-UPDATE_URL = "https://raw.githubusercontent.com/saleh07mohammed-blip/JD_BOY_Macro_App_Final/main/latest_version.json" 
+# هذا الرابط يشير إلى الفرع الرئيسي (main) لفحص الإصدار المستقر
+UPDATE_URL = "https://raw.githubusercontent.com/saleh07mohammed-blip/JD_BOY_Macro_Final/main/latest_version.json" 
 # ------------------------------------------------------------
 
 # ------------------------------------------------------------
@@ -116,17 +117,18 @@ class SplashApp:
         y = (screen_height // 2) - (splash_height // 2)
         master.geometry(f'{splash_width}x{splash_height}+{x}+{y}')
         
-        master.config(bg="#1e1e1e") 
+        # 🎨 لون الخلفية: رمادي فاتح
+        master.config(bg="#E0E0E0") 
 
         # عنصر الاسم المتراقص
         self.title_label = ttk.Label(master, text="JD_BOY", 
                   font=("Courier", 32, "bold"), 
-                  foreground="#00FFFF", 
-                  background="#1e1e1e")
+                  foreground="#FF0000", # 🎨 لون أحمر
+                  background="#E0E0E0") # 🎨 لون رمادي فاتح
         self.title_label.pack(pady=(40, 5)) 
         
         # عنصر شريط التحميل المتقاطع
-        self.canvas = tk.Canvas(master, width=300, height=20, bg="#1e1e1e", highlightthickness=0)
+        self.canvas = tk.Canvas(master, width=300, height=20, bg="#E0E0E0", highlightthickness=0) # 🎨 لون رمادي فاتح
         self.canvas.pack(pady=(5, 2))
         self.progress = 0
         self.loaded_label = None 
@@ -135,8 +137,8 @@ class SplashApp:
         self.percent_var = tk.StringVar(value="0%")
         ttk.Label(master, textvariable=self.percent_var, 
                   font=("Arial", 10, "bold"), 
-                  foreground="#00FFFF", 
-                  background="#1e1e1e").pack(pady=(2, 5))
+                  foreground="#FF0000", # 🎨 لون أحمر
+                  background="#E0E0E0").pack(pady=(2, 5)) # 🎨 لون رمادي فاتح
 
 
         # بدء الحركة
@@ -150,7 +152,7 @@ class SplashApp:
         """يغير تلوين حروف الاسم لتأثير التراقص"""
         if self.progress < 100: 
             current_color = self.title_label.cget("foreground")
-            new_color = "#FF00FF" if current_color == "#00FFFF" else "#00FFFF" 
+            new_color = "#AAAAAA" if current_color == "#FF0000" else "#FF0000" # 🎨 أحمر ورمادي أغمق قليلاً
             self.title_label.config(foreground=new_color)
             self.master.after(200, self.animate_title)
 
@@ -163,9 +165,9 @@ class SplashApp:
             width = 300
             height = 20
             fill_width = (self.progress / 100) * width
-            self.canvas.create_rectangle(0, 0, width, height, outline="#555555", fill="#333333")
+            self.canvas.create_rectangle(0, 0, width, height, outline="#BBBBBB", fill="#DDDDDD") # 🎨 رمادي فاتح
             step = 10
-            line_color = "#00FFFF"
+            line_color = "#FF0000" # 🎨 لون أحمر
             
             for i in range(0, int(fill_width) + step, step):
                 self.canvas.create_line(i + (self.progress % step), 0, i + step + (self.progress % step), height, fill=line_color, width=2)
@@ -177,8 +179,8 @@ class SplashApp:
             self.canvas.delete("all")
             self.loaded_label = ttk.Label(self.master, text="... جاهز للعمل ...", 
                       font=("Arial", 10), 
-                      foreground="#FFFFFF", 
-                      background="#1e1e1e")
+                      foreground="#555555", # 🎨 لون رمادي غامق
+                      background="#E0E0E0") # 🎨 لون رمادي فاتح
             self.loaded_label.pack(pady=5)
 
 
@@ -361,8 +363,8 @@ class App:
         self.log = tk.Text(root, height=10)
         self.log.grid(row=7, column=0, columnspan=5, sticky='ew', padx=10, pady=(0, 10))
 
-        # 🚨 تغيير عنوان البرنامج لتمييز الإصدار 1.0.1
-        root.title(f"🎮 برنامج الماكرو الاحترافي - JD_BOY Edition v{APP_VERSION}")
+        # 🚨 تغيير عنوان البرنامج لتمييز الإصدار 1.0.3 (نسخة المطور)
+        root.title(f"🎮 برنامج الماكرو الاحترافي - JD_BOY Edition v{APP_VERSION} (نسخة المطور)")
         root.geometry("720x620")
         
         # إعداد تخطيط Grid للنافذة الرئيسية
@@ -423,7 +425,7 @@ class App:
 
         ttk.Label(root, text="Powered by JD_BOY", 
                   font=("Arial", 10), 
-                  foreground="#888888").grid(row=1, column=0, columnspan=5, pady=(0, 10))
+                  foreground="#555555").grid(row=1, column=0, columnspan=5, pady=(0, 10)) # 🎨 لون رمادي غامق
 
         # ----------------------------------------------
         #  إطار الاختصارات (Row 2)
@@ -492,13 +494,14 @@ class App:
         ttk.Button(root, text="▶ استمرار التشغيل", width=15, command=self.resume_play).grid(row=5, column=3, columnspan=2, pady=5, sticky='ew', padx=5)
         
         # الصف 6: الإيقاف الكلي
+        # 🎨 زر الإيقاف الكلي باللون الأحمر
         ttk.Button(root, text="⏹ إيقاف التشغيل الكلي (أمان)", style='Danger.TButton', command=self.stop_play).grid(row=6, column=0, columnspan=5, pady=10, sticky='ew', padx=10)
         
         # تحديد لون مختلف لزر الإيقاف الكلي (يتطلب إضافة ستايل)
         style = ttk.Style()
-        style.configure('Danger.TButton', foreground='white', background='#CC0000', font=('Arial', 12, 'bold'))
+        style.configure('Danger.TButton', foreground='white', background='#FF0000', font=('Arial', 12, 'bold')) # 🎨 خلفية حمراء
         style.map('Danger.TButton',
-                   background=[('active', '#FF3333')])
+                   background=[('active', '#CC0000')]) # 🎨 أحمر أغمق عند التفعيل
 
 
     # ---------------- دوال التحديث والـ Discord ------------------
@@ -571,7 +574,8 @@ class App:
         # هنا ما زلنا نستخدم Grid داخل إطار الاختصارات
         ttk.Label(frame, text=title).grid(row=row, column=0, sticky='w')
         var = tk.StringVar(value="لم يتم التعيين")
-        ttk.Label(frame, textvariable=var, foreground="blue").grid(row=row, column=1, padx=10)
+        # 🎨 جعل لون الاختصار في وضع المطور باللون الأحمر لتمييزه
+        ttk.Label(frame, textvariable=var, foreground="#FF0000").grid(row=row, column=1, padx=10)
         ttk.Button(frame, text="تغيير", command=lambda:self._record_hotkey(name, var)).grid(row=row, column=2)
 
     def _record_hotkey(self, name, label_var):
