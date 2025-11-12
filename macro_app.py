@@ -16,9 +16,8 @@ import webbrowser
 # ------------------------------------------------------------
 # ⚙️ إعدادات التحديث
 # ------------------------------------------------------------
-APP_VERSION = "1.0.3"  # 🚨 تم تحديث رقم الإصدار هنا لنسخة المطور
+APP_VERSION = "1.0.3"  # 🚨 الإصدار الحالي 
 # 📌📌 رابط الملف الخام لـ latest_version.json على GitHub
-# هذا الرابط يشير إلى الفرع الرئيسي (main) لفحص الإصدار المستقر
 UPDATE_URL = "https://raw.githubusercontent.com/saleh07mohammed-blip/JD_BOY_Macro_Final/main/latest_version.json" 
 # ------------------------------------------------------------
 
@@ -34,9 +33,7 @@ DISCORD_USER_ID = "358257404028125185"
 def resource_path(relative_path):
     """احصل على المسار المطلق للموارد، سواء في وضع التطوير أو بعد التحزيم."""
     if hasattr(sys, '_MEIPASS'):
-        # إذا كان البرنامج محزماً، ابحث في المجلد المؤقت
         return os.path.join(sys._MEIPASS, relative_path)
-    # إذا كان البرنامج في وضع التطوير، ابحث في المجلد الحالي
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 # ------------------------------------------------------------
 
@@ -52,7 +49,6 @@ def is_admin():
         return False
 
 if not is_admin():
-    # يتم تشغيل هذا الجزء فقط إذا لم يكن بصلاحيات المسؤول
     if getattr(sys, 'frozen', False):
         executable_path = sys.executable
     else:
@@ -61,14 +57,11 @@ if not is_admin():
 
     try:
         if getattr(sys, 'frozen', False):
-            # إعادة تشغيل الملف التنفيذي كمسؤول
             ctypes.windll.shell32.ShellExecuteW(None, "runas", executable_path, "", None, 1)
         else:
-            # إعادة تشغيل ملف السكربت كمسؤول
             ctypes.windll.shell32.ShellExecuteW(None, "runas", executable_path, script, None, 1)
         sys.exit(0)
     except Exception as e:
-        # إذا فشل التشغيل كمسؤول، قد يظهر البرنامج بدون صلاحيات
         pass 
 # ------------------------------------------------------------
 
@@ -102,7 +95,6 @@ class SplashApp:
         self.master = master
         master.overrideredirect(True)
         
-        # استخدام الدالة الجديدة لتحديد المسار 
         icon_path = resource_path('JD_BOY_Macro.ico')
         try:
             master.wm_iconbitmap(icon_path) 
@@ -363,7 +355,7 @@ class App:
         self.log = tk.Text(root, height=10)
         self.log.grid(row=7, column=0, columnspan=5, sticky='ew', padx=10, pady=(0, 10))
 
-        # 🚨 تغيير عنوان البرنامج لتمييز الإصدار 1.0.3 (نسخة المطور)
+        # 🚨 تغيير عنوان البرنامج لتمييز الإصدار 1.0.3 
         root.title(f"🎮 برنامج الماكرو الاحترافي - JD_BOY Edition v{APP_VERSION} (نسخة المطور)")
         root.geometry("720x620")
         
@@ -495,23 +487,23 @@ class App:
         
         # الصف 6: الإيقاف الكلي
         # 🎨 زر الإيقاف الكلي باللون الأحمر
-        ttk.Button(root, text="⏹ إيقاف التشغيل الكلي (أمان)", style='Danger.TButton', command=self.stop_play).grid(row=6, column=0, columnspan=5, pady=10, sticky='ew', padx=10)
-        
-        # تحديد لون مختلف لزر الإيقاف الكلي (يتطلب إضافة ستايل)
         style = ttk.Style()
         style.configure('Danger.TButton', foreground='white', background='#FF0000', font=('Arial', 12, 'bold')) # 🎨 خلفية حمراء
         style.map('Danger.TButton',
                    background=[('active', '#CC0000')]) # 🎨 أحمر أغمق عند التفعيل
-
+        ttk.Button(root, text="⏹ إيقاف التشغيل الكلي (أمان)", style='Danger.TButton', command=self.stop_play).grid(row=6, column=0, columnspan=5, pady=10, sticky='ew', padx=10)
+        
+        
 
     # ---------------- دوال التحديث والـ Discord ------------------
 
     def check_for_updates(self):
         """يفحص ما إذا كان هناك إصدار جديد متوفر ويحمله."""
-        self._log(f"⏳ فحص التحديثات... الإصدار الحالي هو: {APP_VERSION}")
         threading.Thread(target=self._run_update_check, daemon=True).start()
 
     def _run_update_check(self):
+        """يفحص ما إذا كان هناك إصدار جديد متوفر ويحمله، ويفرض التحديث إذا رفض المستخدم."""
+        self._log(f"⏳ فحص التحديثات... الإصدار الحالي هو: {APP_VERSION}")
         try:
             response = requests.get(UPDATE_URL, timeout=5)
             response.raise_for_status()
@@ -527,13 +519,20 @@ class App:
             latest_v = parse_version(latest_version_str)
 
             if latest_v > app_v:
+                # 🛑🛑 هذا هو منطق التحديث الإجباري 🛑🛑
                 self.root.after(0, lambda: self._log(f"🎉 **تم العثور على تحديث!** الإصدار: {latest_version_str}"))
-                msg = f"يجب تحديث البرنامج إلى الإصدار {latest_version_str}. هل ترغب في التحميل الآن؟"
                 
-                if messagebox.askyesno("تحديث البرنامج", msg):
+                # رسالة صارمة تخبر المستخدم بضرورة التحديث
+                msg = f"يجب تحديث البرنامج إلى الإصدار {latest_version_str}. لا يمكن تشغيل الإصدار الحالي بعد الآن لأسباب أمنية أو وظيفية. هل ترغب في التحميل الآن؟"
+                
+                # استخدام أيقونة خطأ لزيادة الأهمية
+                if messagebox.askyesno("تحديث إجباري وضروري", msg, icon='error'): 
                     self.root.after(0, lambda: self.perform_update(download_url))
                 else:
-                    self.root.after(0, lambda: self._log("⚠️ تم رفض التحديث. سيستمر البرنامج في العمل بالإصدار الحالي."))
+                    # 💥 إذا ضغط المستخدم على 'لا' (رفض التحديث)، يتم إنهاء البرنامج فوراً
+                    self.root.after(0, lambda: self._log("🛑 التحديث إجباري. تم رفض التحديث، وسيتم إغلاق البرنامج."))
+                    # تأخير بسيط ثم الإغلاق لضمان ظهور الرسالة
+                    self.root.after(100, self.root.quit) 
 
             elif latest_v == app_v:
                 self.root.after(0, lambda: self._log("✅ برنامجك هو أحدث إصدار."))
@@ -542,10 +541,12 @@ class App:
                 self.root.after(0, lambda: self._log("✅ برنامجك هو أحدث إصدار."))
                 
         except requests.exceptions.RequestException as e:
+            # في حال وجود خطأ في الاتصال، يسمح للبرنامج بالعمل، لأنه قد يكون خطأ شبكة
             self.root.after(0, lambda: self._log(f"❌ خطأ في الاتصال بالإنترنت لفحص التحديثات: {e}"))
         except json.JSONDecodeError:
             self.root.after(0, lambda: self._log("❌ فشل قراءة ملف الإصدار. تأكد من صحة تنسيق JSON."))
-
+        except Exception as e:
+            self.root.after(0, lambda: self._log(f"❌ خطأ غير متوقع أثناء فحص التحديث: {e}"))
 
     def perform_update(self, download_url):
         """يفتح رابط التحميل ويغلق البرنامج لإتاحة الفرصة للتثبيت."""
