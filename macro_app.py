@@ -16,9 +16,9 @@ import webbrowser
 # ------------------------------------------------------------
 # ⚙️ إعدادات التحديث
 # ------------------------------------------------------------
-APP_VERSION = "1.0.0"  # ✅ الإصدار الحالي
+APP_VERSION = "1.0.1"  # 🚨 تم تحديث رقم الإصدار هنا
 # 📌📌 رابط الملف الخام لـ latest_version.json على GitHub
-UPDATE_URL = "https://raw.githubusercontent.com/saleh07mohammed-blip/JD_BOY_Macro_App/refs/heads/main/latest_version.json" 
+UPDATE_URL = "https://raw.githubusercontent.com/saleh07mohammed-blip/JD_BOY_Macro_App_Final/main/latest_version.json" 
 # ------------------------------------------------------------
 
 # ------------------------------------------------------------
@@ -33,7 +33,9 @@ DISCORD_USER_ID = "358257404028125185"
 def resource_path(relative_path):
     """احصل على المسار المطلق للموارد، سواء في وضع التطوير أو بعد التحزيم."""
     if hasattr(sys, '_MEIPASS'):
+        # إذا كان البرنامج محزماً، ابحث في المجلد المؤقت
         return os.path.join(sys._MEIPASS, relative_path)
+    # إذا كان البرنامج في وضع التطوير، ابحث في المجلد الحالي
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 # ------------------------------------------------------------
 
@@ -49,6 +51,7 @@ def is_admin():
         return False
 
 if not is_admin():
+    # يتم تشغيل هذا الجزء فقط إذا لم يكن بصلاحيات المسؤول
     if getattr(sys, 'frozen', False):
         executable_path = sys.executable
     else:
@@ -57,11 +60,14 @@ if not is_admin():
 
     try:
         if getattr(sys, 'frozen', False):
+            # إعادة تشغيل الملف التنفيذي كمسؤول
             ctypes.windll.shell32.ShellExecuteW(None, "runas", executable_path, "", None, 1)
         else:
+            # إعادة تشغيل ملف السكربت كمسؤول
             ctypes.windll.shell32.ShellExecuteW(None, "runas", executable_path, script, None, 1)
         sys.exit(0)
     except Exception as e:
+        # إذا فشل التشغيل كمسؤول، قد يظهر البرنامج بدون صلاحيات
         pass 
 # ------------------------------------------------------------
 
@@ -95,7 +101,7 @@ class SplashApp:
         self.master = master
         master.overrideredirect(True)
         
-        # 📌📌 استخدام الدالة الجديدة لتحديد المسار 
+        # استخدام الدالة الجديدة لتحديد المسار 
         icon_path = resource_path('JD_BOY_Macro.ico')
         try:
             master.wm_iconbitmap(icon_path) 
@@ -319,9 +325,25 @@ class MacroPlayer:
                 elif e['action'] == 'scroll': self.mouse.scroll(e['dx'], e['dy'])
             else:
                 try:
-                    if e['action'] == 'press': self.keyboard.press(e['key'])
-                    else: self.keyboard.release(e['key'])
-                except: pass
+                    # تحويل أسماء المفاتيح إلى كائن Key إذا لم تكن حرفاً
+                    if e['action'] == 'press': 
+                        if len(e['key']) > 1 and e['key'].startswith('<Key.'):
+                            key_name = e['key'].split('.')[-1].split('>')[0]
+                            key_to_press = getattr(Key, key_name, e['key'])
+                        else:
+                            key_to_press = e['key']
+                        self.keyboard.press(key_to_press)
+                    else: 
+                        if len(e['key']) > 1 and e['key'].startswith('<Key.'):
+                            key_name = e['key'].split('.')[-1].split('>')[0]
+                            key_to_release = getattr(Key, key_name, e['key'])
+                        else:
+                            key_to_release = e['key']
+                        self.keyboard.release(key_to_release)
+                except Exception as ex: 
+                    # هذا يضمن أن البرنامج لا يتوقف بسبب خطأ في التعامل مع مفاتيح خاصة
+                    print(f"Error handling key event: {ex}")
+                    pass
 
     def stop(self): self.stop_event.set(); self.pause_event.set()
     def pause(self): self.pause_event.clear()
@@ -339,7 +361,8 @@ class App:
         self.log = tk.Text(root, height=10)
         self.log.grid(row=7, column=0, columnspan=5, sticky='ew', padx=10, pady=(0, 10))
 
-        root.title("🎮 برنامج الماكرو الاحترافي - JD_BOY Edition")
+        # 🚨 تغيير عنوان البرنامج لتمييز الإصدار 1.0.1
+        root.title(f"🎮 برنامج الماكرو الاحترافي - JD_BOY Edition v{APP_VERSION}")
         root.geometry("720x620")
         
         # إعداد تخطيط Grid للنافذة الرئيسية
@@ -349,7 +372,7 @@ class App:
         root.grid_columnconfigure(3, weight=1)
         root.grid_columnconfigure(4, weight=1)
         
-        # 📌📌 استخدام الدالة الجديدة لتحديد المسار 
+        # استخدام الدالة الجديدة لتحديد مسار الأيقونة
         icon_path = resource_path('JD_BOY_Macro.ico')
         try:
             root.wm_iconbitmap(icon_path) 
@@ -364,7 +387,7 @@ class App:
         self.global_listener = keyboard.Listener(on_press=self.global_hotkey)
         self.global_listener.start()
         
-        # 📌📌 1. إنشاء شريط القوائم (Menu Bar) 📌📌
+        # 1. إنشاء شريط القوائم (Menu Bar)
         menubar = tk.Menu(root)
         root.config(menu=menubar)
         
@@ -378,8 +401,6 @@ class App:
         contact_menu.add_separator() 
         contact_menu.add_command(label="ℹ️ حول البرنامج", command=lambda: messagebox.showinfo("حول البرنامج", f"برنامج الماكرو الاحترافي\nالإصدار: {APP_VERSION}\nPowered by JD_BOY"))
         
-        # 📌📌 نهاية شريط القوائم 📌ني
-
         # ----------------------------------------------
         #  الصفوف العلوية للعنوان والأيقونة (Row 0, 1)
         # ----------------------------------------------
@@ -387,7 +408,6 @@ class App:
         # تحميل الأيقونة وعرضها في الـ Label
         self.app_icon = None 
         try:
-            # 📌📌 استخدام الدالة الجديدة هنا أيضاً
             img = Image.open(resource_path('JD_BOY_Macro.ico')) 
             img = img.resize((96, 96), Image.LANCZOS) 
             self.app_icon = ImageTk.PhotoImage(img) 
@@ -423,18 +443,19 @@ class App:
         self._hotkey_ui(f_hotkey, "زر إيقاف التشغيل الكلي", 'stop_all', 4)
         
         # ----------------------------------------------
-        #  إطار التكرار (Row 3) - التركيز هنا للحل النهائي
+        #  إطار التكرار (Row 3)
         # ----------------------------------------------
         repeat_frame = ttk.LabelFrame(root, text="♻️ خيارات التكرار", padding=10)
         repeat_frame.grid(row=3, column=0, columnspan=5, sticky='ew', padx=10, pady=10)
         
-        # إعداد Grid لإطار التكرار (4 أعمدة)
-        repeat_frame.grid_columnconfigure(0, weight=1) # لا يكرر
-        repeat_frame.grid_columnconfigure(1, weight=1) # لا نهائي
-        repeat_frame.grid_columnconfigure(2, weight=1) # مدة
-        repeat_frame.grid_columnconfigure(3, weight=1) # القيمة
-        repeat_frame.grid_columnconfigure(4, weight=1) # الوحدة
-        
+        # إعداد Grid لإطار التكرار (6 أعمدة لضبط التباعد)
+        repeat_frame.grid_columnconfigure(0, weight=1) 
+        repeat_frame.grid_columnconfigure(1, weight=1) 
+        repeat_frame.grid_columnconfigure(2, weight=1) 
+        repeat_frame.grid_columnconfigure(3, weight=0) # للقيمة
+        repeat_frame.grid_columnconfigure(4, weight=0) # لخانة القيمة
+        repeat_frame.grid_columnconfigure(5, weight=1) # للوحدة
+
         self.repeat_mode = tk.StringVar(value='none')
         
         # خيار 1: مرة واحدة (بدون تكرار)
@@ -496,6 +517,7 @@ class App:
             download_url = latest_data.get('download_url')
             
             def parse_version(version_str):
+                # تحويل الإصدار إلى قائمة أرقام للمقارنة (1.0.1 -> [1, 0, 1])
                 return [int(x) for x in version_str.split('.')]
 
             app_v = parse_version(APP_VERSION.strip())
@@ -534,15 +556,12 @@ class App:
             self._log(f"❌ فشل عملية التحديث: {e}")
 
     def open_discord_link(self):
-        """
-        يفتح ملف تعريف المستخدم الخاص بك باستخدام رابط HTTPS.
-        """
+        """يفتح ملف تعريف المستخدم الخاص بك على Discord."""
         profile_url = f"https://discord.com/users/{DISCORD_USER_ID}"
         
         try:
             webbrowser.open(profile_url)
             self._log("📞 تم فتح نافذة المتصفح لربطك بملف تعريف المستخدم الخاص بي على Discord.")
-            self._log("💡 اسم المستخدم هو JD_BOY. يرجى إرسال رسالة خاصة.")
         except Exception as e:
             self._log(f"❌ فشل فتح رابط Discord. خطأ: {e}")
 
